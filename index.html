@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Finanzas Familiares · Angie & Juan</title>
+    <meta name="description" content="Sistema de finanzas personales para Angie y Juan — Cartagena" />
+    <meta name="theme-color" content="#1D9E75" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231D9E75'/><text y='.9em' font-size='70' x='14'>💰</text></svg>" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --color-background-primary: #ffffff;
+        --color-background-secondary: #f6f5f1;
+        --color-background-tertiary: #eeecea;
+        --color-background-success: #e1f5ee;
+        --color-background-danger: #fcebeb;
+        --color-background-warning: #faeeda;
+        --color-background-info: #e6f1fb;
+        --color-text-primary: #1a1a18;
+        --color-text-secondary: #6b6a66;
+        --color-text-tertiary: #9b9a97;
+        --color-text-success: #0f6e56;
+        --color-text-danger: #a32d2d;
+        --color-text-warning: #854f0b;
+        --color-text-info: #185fa5;
+        --color-border-tertiary: rgba(0,0,0,0.10);
+        --color-border-secondary: rgba(0,0,0,0.18);
+        --color-border-primary: rgba(0,0,0,0.30);
+        --color-border-success: #5dcaa5;
+        --border-radius-md: 8px;
+        --border-radius-lg: 12px;
+        --border-radius-xl: 16px;
+        --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --color-background-primary: #1e1d1b;
+          --color-background-secondary: #252421;
+          --color-background-tertiary: #161513;
+          --color-background-success: #04342c;
+          --color-background-danger: #501313;
+          --color-background-warning: #412402;
+          --color-background-info: #042c53;
+          --color-text-primary: #f0ede8;
+          --color-text-secondary: #9b9a97;
+          --color-text-tertiary: #68675f;
+          --color-text-success: #9fe1cb;
+          --color-text-danger: #f7c1c1;
+          --color-text-warning: #fac775;
+          --color-text-info: #b5d4f4;
+          --color-border-tertiary: rgba(255,255,255,0.09);
+          --color-border-secondary: rgba(255,255,255,0.17);
+          --color-border-primary: rgba(255,255,255,0.28);
+          --color-border-success: #085041;
+        }
+      }
+
+      html, body, #root {
+        min-height: 100vh;
+        background: var(--color-background-tertiary);
+        font-family: var(--font-sans);
+        color: var(--color-text-primary);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Form elements */
+      input, select, textarea {
+        font-family: var(--font-sans);
+        font-size: 13px;
+        padding: 8px 10px;
+        border: 0.5px solid var(--color-border-secondary);
+        border-radius: var(--border-radius-md);
+        background: var(--color-background-primary);
+        color: var(--color-text-primary);
+        width: 100%;
+        outline: none;
+        appearance: none;
+        -webkit-appearance: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      input:focus, select:focus, textarea:focus {
+        border-color: #1D9E75;
+        box-shadow: 0 0 0 3px rgba(29, 158, 117, 0.15);
+      }
+      select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239b9a97' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        padding-right: 30px;
+      }
+      input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        min-width: 16px;
+        cursor: pointer;
+        accent-color: #1D9E75;
+      }
+      input[type="month"], input[type="date"] { cursor: pointer; }
+
+      /* Scrollbar */
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: var(--color-border-secondary); border-radius: 3px; }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-6px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .fade-in { animation: fadeIn 0.18s ease; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
