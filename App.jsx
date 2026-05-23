@@ -634,52 +634,51 @@ export default function App() {
   const proxPagos = [...pagos].sort((a,b)=>a.fecha>b.fecha?1:-1)
 
   const TABS = [
-    {id:'inicio',      icon:'ti-layout-dashboard', label:'Inicio'},
-    {id:'movimientos', icon:'ti-arrows-exchange',   label:'Movimientos'},
-    {id:'deudas',      icon:'ti-credit-card',       label:'Deudas'},
-    {id:'pagos',       icon:'ti-calendar-event',    label:'Pagos'},
-    {id:'ajustes',     icon:'ti-adjustments-horizontal', label:'Categorías'},
+    {id:'inicio',      icon:'ti-layout-dashboard',       label:'Inicio'},
+    {id:'movimientos', icon:'ti-arrows-exchange',         label:'Movimientos'},
+    {id:'deudas',      icon:'ti-credit-card',             label:'Deudas'},
+    {id:'pagos',       icon:'ti-calendar-event',          label:'Pagos'},
+    {id:'ajustes',     icon:'ti-adjustments-horizontal',  label:'Categorías'},
   ]
 
-  return (
-    <div style={{minHeight:'100vh',background:'var(--color-background-tertiary)',fontFamily:'var(--font-sans)'}}>
+  const TAB_TITLES = {
+    inicio: 'Finanzas Familiares',
+    movimientos: 'Movimientos',
+    deudas: 'Deudas',
+    pagos: 'Pagos',
+    ajustes: 'Categorías',
+  }
 
+  return (
+    <div id="app-root" style={{height:'100%',display:'flex',flexDirection:'column',background:'var(--color-background-tertiary)'}}>
+
+      {/* Toast */}
       {pagoMsg&&(
-        <div style={{position:'fixed',bottom:24,left:'50%',transform:'translateX(-50%)',background:'#0F6E56',color:'white',padding:'10px 20px',borderRadius:8,fontSize:13,fontWeight:500,zIndex:999,whiteSpace:'nowrap',boxShadow:'0 4px 12px rgba(0,0,0,0.2)'}}>
+        <div style={{position:'fixed',bottom:'calc(var(--nav-h) + 12px)',left:'50%',transform:'translateX(-50%)',background:'#0F6E56',color:'white',padding:'10px 20px',borderRadius:10,fontSize:13,fontWeight:500,zIndex:999,whiteSpace:'nowrap',boxShadow:'0 4px 16px rgba(0,0,0,0.25)'}}>
           {pagoMsg}
         </div>
       )}
 
       {/* HEADER */}
-      <div style={{background:'var(--color-background-primary)',borderBottom:'0.5px solid var(--color-border-tertiary)',padding:'0.875rem 1.25rem',position:'sticky',top:0,zIndex:10}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',maxWidth:720,margin:'0 auto'}}>
+      <div className="app-header">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',maxWidth:520,margin:'0 auto'}}>
           <div style={{display:'flex',alignItems:'center',gap:10}}>
-            <div style={{width:36,height:36,borderRadius:9,background:'#1D9E75',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-              <i className="ti ti-report-money" style={{fontSize:19,color:'white'}} aria-hidden/>
+            <div style={{width:34,height:34,borderRadius:10,background:'#1D9E75',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 2px 8px rgba(29,158,117,0.35)'}}>
+              <i className="ti ti-report-money" style={{fontSize:18,color:'white'}} aria-hidden/>
             </div>
             <div>
-              <p style={{margin:0,fontSize:14,fontWeight:500}}>Finanzas Familiares</p>
+              <p style={{margin:0,fontSize:15,fontWeight:600,letterSpacing:-0.3}}>{TAB_TITLES[tab]}</p>
               <p style={{margin:0,fontSize:11,color:'var(--color-text-tertiary)'}}>Angie & Juan · Cartagena</p>
             </div>
           </div>
           <input type="month" value={filtroM} onChange={e=>setFiltroM(e.target.value)}
-            style={{fontSize:12,padding:'5px 8px',borderRadius:6,border:'0.5px solid var(--color-border-secondary)',cursor:'pointer',width:'auto'}}/>
+            style={{fontSize:13,padding:'6px 10px',borderRadius:8,border:'0.5px solid var(--color-border-secondary)',cursor:'pointer',width:'auto',fontFamily:'inherit'}}/>
         </div>
       </div>
 
-      {/* TABS */}
-      <div style={{background:'var(--color-background-primary)',borderBottom:'0.5px solid var(--color-border-tertiary)',position:'sticky',top:61,zIndex:9}}>
-        <div style={{display:'flex',maxWidth:720,margin:'0 auto',padding:'0 0.25rem'}}>
-          {TABS.map(t=>(
-            <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,padding:'9px 2px',border:'none',background:'none',cursor:'pointer',fontSize:11,fontWeight:tab===t.id?500:400,fontFamily:'inherit',color:tab===t.id?'#1D9E75':'var(--color-text-secondary)',borderBottom:`2px solid ${tab===t.id?'#1D9E75':'transparent'}`,display:'flex',flexDirection:'column',alignItems:'center',gap:3,transition:'all 0.15s'}}>
-              <i className={`ti ${t.icon}`} style={{fontSize:16}} aria-hidden/>
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div style={{padding:'1.25rem',maxWidth:720,margin:'0 auto'}}>
+      {/* SCROLLABLE CONTENT */}
+      <div className="scroll-content">
+        <div style={{padding:'1rem',maxWidth:520,margin:'0 auto'}}>
 
         {/* ══ INICIO ══ */}
         {tab==='inicio'&&<>
@@ -845,19 +844,25 @@ export default function App() {
           </div>
           {showRF&&<RecurrenteForm onSave={addRec} onCancel={()=>setShowRF(false)} deudas={deudas} catGas={catGas} contextos={contextos}/>}
 
-          {/* Periodic payments grouped by urgency */}
+          {/* Periodic payments grouped by calendar month */}
           {(()=>{
             if (recSorted.length===0&&!showRF) return (
               <div style={{background:'var(--color-background-primary)',borderRadius:'var(--border-radius-md)',border:'0.5px dashed var(--color-border-secondary)',padding:'1rem',marginBottom:12,textAlign:'center',color:'var(--color-text-tertiary)',fontSize:13}}>
                 ↻ Agregá cuotas de crédito, tarjetas, servicios recurrentes…
               </div>
             )
+            const now=new Date(),cy=now.getFullYear(),cm=now.getMonth()
+            const mesNombre=m=>new Date(cy,m,1).toLocaleDateString('es-CO',{month:'long'})
+            const nm=cm+1>11?0:cm+1,ny=cm+1>11?cy+1:cy
+            const gns=r=>dateToStr(calcNextDue(r.ultimoPago,r.frecuencia))
+            const gf=s=>s?new Date(s+'T00:00:00'):null
             const grupos = [
-              { key:'vencido', label:'Vencidos',        icon:'ti-alert-circle',    bg:'#FCEBEB', border:'#F09595', color:'#E24B4A', textColor:'#A32D2D', items: recSorted.filter(r=>{ const n=dateToStr(calcNextDue(r.ultimoPago,r.frecuencia)); return n&&daysUntil(n)<0 }) },
-              { key:'hoy',     label:'Hoy',              icon:'ti-bell-ringing',    bg:'#FFF3E0', border:'#F5A623', color:'#E67E00', textColor:'#7A4000', items: recSorted.filter(r=>{ const n=dateToStr(calcNextDue(r.ultimoPago,r.frecuencia)); return n&&daysUntil(n)===0 }) },
-              { key:'semana',  label:'Esta semana',      icon:'ti-clock-hour-4',    bg:'#FAEEDA', border:'#FAC775', color:'#BA7517', textColor:'#854F0B', items: recSorted.filter(r=>{ const d=daysUntil(dateToStr(calcNextDue(r.ultimoPago,r.frecuencia))||''); return d>=1&&d<=7 }) },
-              { key:'mes',     label:'Este mes',         icon:'ti-calendar-month',  bg:'#E6F1FB', border:'#94C4F5', color:'#185FA5', textColor:'#0D3F72', items: recSorted.filter(r=>{ const d=daysUntil(dateToStr(calcNextDue(r.ultimoPago,r.frecuencia))||''); return d>=8&&d<=30 }) },
-              { key:'futuro',  label:'Más adelante',     icon:'ti-calendar',        bg:'var(--color-background-secondary)', border:'var(--color-border-tertiary)', color:'var(--color-text-secondary)', textColor:'var(--color-text-secondary)', items: recSorted.filter(r=>{ const d=daysUntil(dateToStr(calcNextDue(r.ultimoPago,r.frecuencia))||''); return d>30 }) },
+              { key:'vencido', label:'Vencidos',                      icon:'ti-alert-circle',   bg:'#FCEBEB',                        border:'#F09595',                      color:'#E24B4A', textColor:'#A32D2D', items: recSorted.filter(r=>{const n=gns(r);return n&&daysUntil(n)<0}) },
+              { key:'hoy',     label:'Hoy',                           icon:'ti-bell-ringing',   bg:'#FFF3E0',                        border:'#F5A623',                      color:'#E67E00', textColor:'#7A4000', items: recSorted.filter(r=>{const n=gns(r);return n&&daysUntil(n)===0}) },
+              { key:'semana',  label:'Esta semana',                   icon:'ti-clock-hour-4',   bg:'#FAEEDA',                        border:'#FAC775',                      color:'#BA7517', textColor:'#854F0B', items: recSorted.filter(r=>{const d=daysUntil(gns(r)||'');return d>=1&&d<=7}) },
+              { key:'mes0',    label:`Este mes (${mesNombre(cm)})`,   icon:'ti-calendar-month', bg:'#E6F1FB',                        border:'#94C4F5',                      color:'#185FA5', textColor:'#0D3F72', items: recSorted.filter(r=>{const f=gf(gns(r)),d=daysUntil(gns(r)||'');return d>7&&f&&f.getFullYear()===cy&&f.getMonth()===cm}) },
+              { key:'mes1',    label:`Próximo mes (${mesNombre(nm)})`,icon:'ti-calendar-month', bg:'#F3EFFE',                        border:'#C9B8F9',                      color:'#6B3FD4', textColor:'#4A2A96', items: recSorted.filter(r=>{const f=gf(gns(r));return f&&f.getFullYear()===ny&&f.getMonth()===nm}) },
+              { key:'futuro',  label:'Más adelante',                  icon:'ti-calendar',       bg:'var(--color-background-secondary)', border:'var(--color-border-tertiary)', color:'var(--color-text-secondary)', textColor:'var(--color-text-secondary)', items: recSorted.filter(r=>{const f=gf(gns(r));return f&&(f.getFullYear()>ny||(f.getFullYear()===ny&&f.getMonth()>nm))}) },
             ].filter(g=>g.items.length>0)
             return grupos.map(g=>(
               <div key={g.key} style={{marginBottom:16}}>
@@ -883,15 +888,20 @@ export default function App() {
           {showPF&&<PagoForm onSave={addPago} onCancel={()=>setShowPF(false)}/>}
           {pagos.length===0&&!showPF&&<EmptyState icon="ti-calendar-off" text="Sin pagos puntuales programados"/>}
 
-          {/* Puntuales also grouped */}
+          {/* Puntuales grouped by calendar month */}
           {(()=>{
             if (proxPagos.length===0) return null
+            const now=new Date(),cy=now.getFullYear(),cm=now.getMonth()
+            const mesNombre=m=>new Date(cy,m,1).toLocaleDateString('es-CO',{month:'long'})
+            const nm=cm+1>11?0:cm+1,ny=cm+1>11?cy+1:cy
+            const gf=s=>new Date(s+'T00:00:00')
             const grupos = [
-              { key:'vencido', label:'Vencidos',     icon:'ti-alert-circle',   bg:'#FCEBEB', border:'#F09595', color:'#E24B4A', textColor:'#A32D2D', items: proxPagos.filter(p=>daysUntil(p.fecha)<0) },
-              { key:'hoy',     label:'Hoy',           icon:'ti-bell-ringing',   bg:'#FFF3E0', border:'#F5A623', color:'#E67E00', textColor:'#7A4000', items: proxPagos.filter(p=>daysUntil(p.fecha)===0) },
-              { key:'semana',  label:'Esta semana',   icon:'ti-clock-hour-4',   bg:'#FAEEDA', border:'#FAC775', color:'#BA7517', textColor:'#854F0B', items: proxPagos.filter(p=>{const d=daysUntil(p.fecha);return d>=1&&d<=7}) },
-              { key:'mes',     label:'Este mes',      icon:'ti-calendar-month', bg:'#E6F1FB', border:'#94C4F5', color:'#185FA5', textColor:'#0D3F72', items: proxPagos.filter(p=>{const d=daysUntil(p.fecha);return d>=8&&d<=30}) },
-              { key:'futuro',  label:'Más adelante',  icon:'ti-calendar',       bg:'var(--color-background-secondary)', border:'var(--color-border-tertiary)', color:'var(--color-text-secondary)', textColor:'var(--color-text-secondary)', items: proxPagos.filter(p=>daysUntil(p.fecha)>30) },
+              { key:'vencido', label:'Vencidos',                      icon:'ti-alert-circle',   bg:'#FCEBEB',                          border:'#F09595',                        color:'#E24B4A', textColor:'#A32D2D', items: proxPagos.filter(p=>daysUntil(p.fecha)<0) },
+              { key:'hoy',     label:'Hoy',                           icon:'ti-bell-ringing',   bg:'#FFF3E0',                          border:'#F5A623',                        color:'#E67E00', textColor:'#7A4000', items: proxPagos.filter(p=>daysUntil(p.fecha)===0) },
+              { key:'semana',  label:'Esta semana',                   icon:'ti-clock-hour-4',   bg:'#FAEEDA',                          border:'#FAC775',                        color:'#BA7517', textColor:'#854F0B', items: proxPagos.filter(p=>{const d=daysUntil(p.fecha);return d>=1&&d<=7}) },
+              { key:'mes0',    label:`Este mes (${mesNombre(cm)})`,   icon:'ti-calendar-month', bg:'#E6F1FB',                          border:'#94C4F5',                        color:'#185FA5', textColor:'#0D3F72', items: proxPagos.filter(p=>{const f=gf(p.fecha),d=daysUntil(p.fecha);return d>7&&f.getFullYear()===cy&&f.getMonth()===cm}) },
+              { key:'mes1',    label:`Próximo mes (${mesNombre(nm)})`,icon:'ti-calendar-month', bg:'#F3EFFE',                          border:'#C9B8F9',                        color:'#6B3FD4', textColor:'#4A2A96', items: proxPagos.filter(p=>{const f=gf(p.fecha);return f.getFullYear()===ny&&f.getMonth()===nm}) },
+              { key:'futuro',  label:'Más adelante',                  icon:'ti-calendar',       bg:'var(--color-background-secondary)', border:'var(--color-border-tertiary)',   color:'var(--color-text-secondary)', textColor:'var(--color-text-secondary)', items: proxPagos.filter(p=>{const f=gf(p.fecha);return f.getFullYear()>ny||(f.getFullYear()===ny&&f.getMonth()>nm)}) },
             ].filter(g=>g.items.length>0)
             return grupos.map(g=>(
               <div key={g.key} style={{marginBottom:16}}>
@@ -936,7 +946,25 @@ export default function App() {
           <SettingsTab catIng={catIng} catGas={catGas} contextos={contextos} setCatIng={setCatIng} setCatGas={setCatGas} setContextos={setContextos}/>
         )}
 
-      </div>
+        </div>{/* end inner padding */}
+      </div>{/* end scroll-content */}
+
+      {/* BOTTOM NAV */}
+      <nav className="bottom-nav" aria-label="Navegación principal">
+        {TABS.map(t=>{
+          const active = tab===t.id
+          return (
+            <button key={t.id} className="nav-btn" onClick={()=>setTab(t.id)} aria-label={t.label} aria-current={active?'page':undefined}>
+              <div style={{position:'relative'}}>
+                {active && <div style={{position:'absolute',inset:-6,borderRadius:10,background:'#1D9E7518'}}/>}
+                <i className={`ti ${t.icon}`} style={{fontSize:22,color:active?'#1D9E75':'var(--color-text-tertiary)',position:'relative'}} aria-hidden/>
+              </div>
+              <span style={{fontSize:10,fontWeight:active?600:400,color:active?'#1D9E75':'var(--color-text-tertiary)',letterSpacing:0.1}}>{t.label}</span>
+            </button>
+          )
+        })}
+      </nav>
+
     </div>
   )
 }
