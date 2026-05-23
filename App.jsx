@@ -684,14 +684,8 @@ export default function App() {
         {/* ══ INICIO ══ */}
         {tab==='inicio'&&<>
           <ResumenDia trans={trans} contextos={contextos}/>
-          <div style={{display:'flex',gap:6,marginBottom:'0.5rem',flexWrap:'wrap'}}>
-            {['Todos','Angie','Juan','Compartido'].map(p=><Chip key={p} active={filtroP===p} onClick={()=>setFiltroP(p)}>{p}</Chip>)}
-          </div>
           <div style={{display:'flex',gap:6,marginBottom:'1rem',flexWrap:'wrap'}}>
-            {['Todos',...contextos].map((c,i)=>{
-              const s=CTX_STYLE_MAP(c,contextos,i)
-              return <Chip key={c} active={filtroCtx===c} onClick={()=>setFiltroCtx(c)} color={s?.color}>{c}</Chip>
-            })}
+            {['Todos','Angie','Juan','Compartido'].map(p=><Chip key={p} active={filtroP===p} onClick={()=>setFiltroP(p)}>{p}</Chip>)}
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:10,marginBottom:'1rem'}}>
             <SumCard label="Balance del mes" val={balance} color={balance>=0?'#1D9E75':'#E24B4A'} icon="ti-wallet" bg={balance>=0?'#E1F5EE':'#FCEBEB'}/>
@@ -767,14 +761,8 @@ export default function App() {
             <p style={{margin:0,fontSize:13,fontWeight:500}}>Movimientos · {filtroM}</p>
             <Btn color="#1D9E75" label="Agregar" icon="ti-plus" onClick={()=>setShowTF(v=>!v)}/>
           </div>
-          <div style={{display:'flex',gap:6,marginBottom:'0.5rem',flexWrap:'wrap'}}>
-            {['Todos','Angie','Juan','Compartido'].map(p=><Chip key={p} active={filtroP===p} onClick={()=>setFiltroP(p)}>{p}</Chip>)}
-          </div>
           <div style={{display:'flex',gap:6,marginBottom:'1rem',flexWrap:'wrap'}}>
-            {['Todos',...contextos].map((c,i)=>{
-              const s=CTX_STYLE_MAP(c,contextos,i)
-              return <Chip key={c} active={filtroCtx===c} onClick={()=>setFiltroCtx(c)} color={s?.color}>{c}</Chip>
-            })}
+            {['Todos','Angie','Juan','Compartido'].map(p=><Chip key={p} active={filtroP===p} onClick={()=>setFiltroP(p)}>{p}</Chip>)}
           </div>
           {showTF&&<TransForm onSave={addTrans} onCancel={()=>setShowTF(false)} catIng={catIng} catGas={catGas} contextos={contextos}/>}
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:8,marginBottom:'1rem'}}>
@@ -856,12 +844,32 @@ export default function App() {
             <Btn color="#0F6E56" label="+ Periódico" onClick={()=>setShowRF(v=>!v)}/>
           </div>
           {showRF&&<RecurrenteForm onSave={addRec} onCancel={()=>setShowRF(false)} deudas={deudas} catGas={catGas} contextos={contextos}/>}
-          {recSorted.length===0&&!showRF&&(
-            <div style={{background:'var(--color-background-primary)',borderRadius:'var(--border-radius-md)',border:'0.5px dashed var(--color-border-secondary)',padding:'1rem',marginBottom:12,textAlign:'center',color:'var(--color-text-tertiary)',fontSize:13}}>
-              ↻ Agregá cuotas de crédito, tarjetas, servicios recurrentes…
-            </div>
-          )}
-          {recSorted.map(rec=><RecurrenteCard key={rec.id} rec={rec} deuda={deudas.find(d=>d.id===rec.deudaId)} onPagar={pagarRec} onDelete={delRec} contextos={contextos}/>)}
+
+          {/* Periodic payments grouped by urgency */}
+          {(()=>{
+            if (recSorted.length===0&&!showRF) return (
+              <div style={{background:'var(--color-background-primary)',borderRadius:'var(--border-radius-md)',border:'0.5px dashed var(--color-border-secondary)',padding:'1rem',marginBottom:12,textAlign:'center',color:'var(--color-text-tertiary)',fontSize:13}}>
+                ↻ Agregá cuotas de crédito, tarjetas, servicios recurrentes…
+              </div>
+            )
+            const grupos = [
+              { key:'vencido', label:'Vencidos',        icon:'ti-alert-circle',    bg:'#FCEBEB', border:'#F09595', color:'#E24B4A', textColor:'#A32D2D', items: recSorted.filter(r=>{ const n=dateToStr(calcNextDue(r.ultimoPago,r.frecuencia)); return n&&daysUntil(n)<0 }) },
+              { key:'hoy',     label:'Hoy',              icon:'ti-bell-ringing',    bg:'#FFF3E0', border:'#F5A623', color:'#E67E00', textColor:'#7A4000', items: recSorted.filter(r=>{ const n=dateToStr(calcNextDue(r.ultimoPago,r.frecuencia)); return n&&daysUntil(n)===0 }) },
+              { key:'semana',  label:'Esta semana',      icon:'ti-clock-hour-4',    bg:'#FAEEDA', border:'#FAC775', color:'#BA7517', textColor:'#854F0B', items: recSorted.filter(r=>{ const d=daysUntil(dateToStr(calcNextDue(r.ultimoPago,r.frecuencia))||''); return d>=1&&d<=7 }) },
+              { key:'mes',     label:'Este mes',         icon:'ti-calendar-month',  bg:'#E6F1FB', border:'#94C4F5', color:'#185FA5', textColor:'#0D3F72', items: recSorted.filter(r=>{ const d=daysUntil(dateToStr(calcNextDue(r.ultimoPago,r.frecuencia))||''); return d>=8&&d<=30 }) },
+              { key:'futuro',  label:'Más adelante',     icon:'ti-calendar',        bg:'var(--color-background-secondary)', border:'var(--color-border-tertiary)', color:'var(--color-text-secondary)', textColor:'var(--color-text-secondary)', items: recSorted.filter(r=>{ const d=daysUntil(dateToStr(calcNextDue(r.ultimoPago,r.frecuencia))||''); return d>30 }) },
+            ].filter(g=>g.items.length>0)
+            return grupos.map(g=>(
+              <div key={g.key} style={{marginBottom:16}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,padding:'7px 12px',borderRadius:'var(--border-radius-md)',background:g.bg,border:`0.5px solid ${g.border}`,marginBottom:8}}>
+                  <i className={`ti ${g.icon}`} style={{fontSize:14,color:g.color,flexShrink:0}} aria-hidden/>
+                  <span style={{fontSize:12,fontWeight:600,color:g.textColor}}>{g.label}</span>
+                  <span style={{fontSize:11,color:g.textColor,opacity:0.7,marginLeft:'auto'}}>{g.items.length} pago(s) · {fmt(g.items.reduce((s,r)=>s+r.monto,0))}</span>
+                </div>
+                {g.items.map(rec=><RecurrenteCard key={rec.id} rec={rec} deuda={deudas.find(d=>d.id===rec.deudaId)} onPagar={pagarRec} onDelete={delRec} contextos={contextos}/>)}
+              </div>
+            ))
+          })()}
 
           <div style={{display:'flex',alignItems:'center',gap:10,margin:'1.25rem 0 1rem'}}>
             <div style={{flex:1,height:'0.5px',background:'var(--color-border-tertiary)'}}/>
@@ -874,32 +882,53 @@ export default function App() {
           </div>
           {showPF&&<PagoForm onSave={addPago} onCancel={()=>setShowPF(false)}/>}
           {pagos.length===0&&!showPF&&<EmptyState icon="ti-calendar-off" text="Sin pagos puntuales programados"/>}
-          {proxPagos.map(p=>{
-            const d=daysUntil(p.fecha),vencido=d<0,urgente=d>=0&&d<=5
-            return (
-              <div key={p.id} style={{background:'var(--color-background-primary)',borderRadius:'var(--border-radius-md)',border:`0.5px solid ${vencido?'#F09595':urgente?'#FAC775':'var(--color-border-tertiary)'}`,padding:'0.875rem',marginBottom:8,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                <div style={{display:'flex',gap:10,alignItems:'center',flex:1,minWidth:0}}>
-                  <div style={{width:36,height:36,borderRadius:8,flexShrink:0,background:vencido?'#FCEBEB':urgente?'#FAEEDA':'var(--color-background-secondary)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                    <i className="ti ti-calendar" style={{fontSize:16,color:vencido?'#E24B4A':urgente?'#BA7517':'var(--color-text-secondary)'}} aria-hidden/>
-                  </div>
-                  <div style={{minWidth:0}}>
-                    <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',marginBottom:2}}>
-                      <p style={{margin:0,fontSize:13,fontWeight:500}}>{p.descripcion}</p><Badge persona={p.persona}/>
+
+          {/* Puntuales also grouped */}
+          {(()=>{
+            if (proxPagos.length===0) return null
+            const grupos = [
+              { key:'vencido', label:'Vencidos',     icon:'ti-alert-circle',   bg:'#FCEBEB', border:'#F09595', color:'#E24B4A', textColor:'#A32D2D', items: proxPagos.filter(p=>daysUntil(p.fecha)<0) },
+              { key:'hoy',     label:'Hoy',           icon:'ti-bell-ringing',   bg:'#FFF3E0', border:'#F5A623', color:'#E67E00', textColor:'#7A4000', items: proxPagos.filter(p=>daysUntil(p.fecha)===0) },
+              { key:'semana',  label:'Esta semana',   icon:'ti-clock-hour-4',   bg:'#FAEEDA', border:'#FAC775', color:'#BA7517', textColor:'#854F0B', items: proxPagos.filter(p=>{const d=daysUntil(p.fecha);return d>=1&&d<=7}) },
+              { key:'mes',     label:'Este mes',      icon:'ti-calendar-month', bg:'#E6F1FB', border:'#94C4F5', color:'#185FA5', textColor:'#0D3F72', items: proxPagos.filter(p=>{const d=daysUntil(p.fecha);return d>=8&&d<=30}) },
+              { key:'futuro',  label:'Más adelante',  icon:'ti-calendar',       bg:'var(--color-background-secondary)', border:'var(--color-border-tertiary)', color:'var(--color-text-secondary)', textColor:'var(--color-text-secondary)', items: proxPagos.filter(p=>daysUntil(p.fecha)>30) },
+            ].filter(g=>g.items.length>0)
+            return grupos.map(g=>(
+              <div key={g.key} style={{marginBottom:16}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,padding:'7px 12px',borderRadius:'var(--border-radius-md)',background:g.bg,border:`0.5px solid ${g.border}`,marginBottom:8}}>
+                  <i className={`ti ${g.icon}`} style={{fontSize:14,color:g.color,flexShrink:0}} aria-hidden/>
+                  <span style={{fontSize:12,fontWeight:600,color:g.textColor}}>{g.label}</span>
+                  <span style={{fontSize:11,color:g.textColor,opacity:0.7,marginLeft:'auto'}}>{g.items.length} pago(s) · {fmt(g.items.reduce((s,p)=>s+p.monto,0))}</span>
+                </div>
+                {g.items.map(p=>{
+                  const d=daysUntil(p.fecha),vencido=d<0
+                  return (
+                    <div key={p.id} style={{background:'var(--color-background-primary)',borderRadius:'var(--border-radius-md)',border:`0.5px solid ${g.border}`,padding:'0.875rem',marginBottom:8,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                      <div style={{display:'flex',gap:10,alignItems:'center',flex:1,minWidth:0}}>
+                        <div style={{width:36,height:36,borderRadius:8,flexShrink:0,background:g.bg,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                          <i className="ti ti-calendar" style={{fontSize:16,color:g.color}} aria-hidden/>
+                        </div>
+                        <div style={{minWidth:0}}>
+                          <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',marginBottom:2}}>
+                            <p style={{margin:0,fontSize:13,fontWeight:500}}>{p.descripcion}</p><Badge persona={p.persona}/>
+                          </div>
+                          <span style={{fontSize:11,color:g.textColor}}>
+                            {p.fecha} · {vencido?`Vencido hace ${Math.abs(d)}d`:d===0?'¡Hoy!':`En ${d}d`}
+                          </span>
+                        </div>
+                      </div>
+                      <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
+                        <span style={{fontSize:14,fontWeight:500,color:g.color,whiteSpace:'nowrap'}}>{fmt(p.monto)}</span>
+                        <button onClick={()=>delPago(p.id)} style={{border:'none',background:'none',cursor:'pointer',color:'var(--color-text-tertiary)',padding:2,borderRadius:4}} aria-label="Eliminar">
+                          <i className="ti ti-trash" style={{fontSize:15}} aria-hidden/>
+                        </button>
+                      </div>
                     </div>
-                    <span style={{fontSize:11,color:vencido?'#E24B4A':urgente?'#BA7517':'var(--color-text-tertiary)'}}>
-                      {p.fecha} · {vencido?`Vencido hace ${Math.abs(d)}d`:d===0?'¡Hoy!':`En ${d}d`}
-                    </span>
-                  </div>
-                </div>
-                <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
-                  <span style={{fontSize:14,fontWeight:500,color:vencido?'#E24B4A':urgente?'#BA7517':'var(--color-text-primary)',whiteSpace:'nowrap'}}>{fmt(p.monto)}</span>
-                  <button onClick={()=>delPago(p.id)} style={{border:'none',background:'none',cursor:'pointer',color:'var(--color-text-tertiary)',padding:2,borderRadius:4}} aria-label="Eliminar">
-                    <i className="ti ti-trash" style={{fontSize:15}} aria-hidden/>
-                  </button>
-                </div>
+                  )
+                })}
               </div>
-            )
-          })}
+            ))
+          })()}
         </>}
 
         {/* ══ AJUSTES ══ */}
