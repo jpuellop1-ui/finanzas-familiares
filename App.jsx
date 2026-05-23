@@ -267,16 +267,6 @@ function SettingsTab({catIng, catGas, contextos, setCatIng, setCatGas, setContex
         onRename={(idx,v) => setCatGas(p=>p.map((x,i)=>i===idx?v:x))}
       />
 
-      <CatList
-        title="Ámbitos / Proyectos"
-        items={contextos}
-        accentColor="#534AB7"
-        icon="ti-building"
-        onAdd={v => setContextos(p=>[...p,v])}
-        onDelete={idx => setContextos(p=>p.filter((_,i)=>i!==idx))}
-        onRename={(idx,v) => setContextos(p=>p.map((x,i)=>i===idx?v:x))}
-      />
-
       <div style={{background:'var(--color-background-secondary)',borderRadius:'var(--border-radius-md)',padding:'0.875rem',fontSize:12,color:'var(--color-text-tertiary)'}}>
         <i className="ti ti-info-circle" style={{marginRight:5}} aria-hidden/>
         Los cambios se guardan automáticamente. Si eliminás una categoría que ya tiene movimientos, esos movimientos conservan su categoría original.
